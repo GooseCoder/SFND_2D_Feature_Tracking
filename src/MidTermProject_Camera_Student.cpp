@@ -40,6 +40,13 @@ int main(int argc, const char *argv[])
     vector<DataFrame> dataBuffer; // list of data frames which are held in memory at the same time
     bool bVis = false;            // visualize results
 
+    
+    string descriptorType = "BRIEF";
+    string detectorType = "FAST";
+    string descriptorDataType = "DES_BINARY";
+    string matcherType = "MAT_BF";
+    string selectorType = "SEL_KNN";
+
     /* MAIN LOOP OVER ALL IMAGES */
 
     for (size_t imgIndex = 0; imgIndex <= imgEndIndex - imgStartIndex; imgIndex++)
@@ -58,6 +65,8 @@ int main(int argc, const char *argv[])
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.1 -> replace the following code with ring buffer of size dataBufferSize
+        if(dataBuffer.size()==dataBufferSize)
+            dataBuffer.erase(dataBuffer.begin());
 
         // push image into data frame buffer
         DataFrame frame;
@@ -71,7 +80,6 @@ int main(int argc, const char *argv[])
 
         // extract 2D keypoints from current image
         vector<cv::KeyPoint> keypoints; // create empty feature list for current image
-        string detectorType = "SHITOMASI";
 
         //// STUDENT ASSIGNMENT
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
@@ -81,9 +89,20 @@ int main(int argc, const char *argv[])
         {
             detKeypointsShiTomasi(keypoints, imgGray, false);
         }
+        else if(detectorType.compare("HARRIS")==0)
+        {
+            detKeypointsHarris(keypoints,imgGray,false);
+        }
         else
         {
-            //...
+            try
+            {
+                detKeypointsModern(keypoints,imgGray,detectorType,false);
+            }
+            catch(const invalid_argument& exp)
+            {
+                cout<<exp.what()<<endl;
+            }
         }
         //// EOF STUDENT ASSIGNMENT
 
@@ -95,8 +114,18 @@ int main(int argc, const char *argv[])
         cv::Rect vehicleRect(535, 180, 180, 150);
         if (bFocusOnVehicle)
         {
-            // ...
+            vector<cv::KeyPoint> focusedKeypoints;
+            for(auto it=keypoints.begin();it!=keypoints.end();++it)
+            {
+                if(vehicleRect.contains(it->pt))
+                {
+                    focusedKeypoints.push_back(*it);
+                }
+            }
+            keypoints=focusedKeypoints;
         }
+
+        cout<<"---> Number of keypoints on previous vehicle = "<<keypoints.size()<<endl;
 
         //// EOF STUDENT ASSIGNMENT
 
@@ -125,7 +154,6 @@ int main(int argc, const char *argv[])
         //// -> BRIEF, ORB, FREAK, AKAZE, SIFT
 
         cv::Mat descriptors;
-        string descriptorType = "BRISK"; // BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints((dataBuffer.end() - 1)->keypoints, (dataBuffer.end() - 1)->cameraImg, descriptors, descriptorType);
         //// EOF STUDENT ASSIGNMENT
 
@@ -140,17 +168,22 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
-            string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-            string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
 
             //// STUDENT ASSIGNMENT
             //// TASK MP.5 -> add FLANN matching in file matching2D.cpp
             //// TASK MP.6 -> add KNN match selection and perform descriptor distance ratio filtering with t=0.8 in file matching2D.cpp
 
-            matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
-                             (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
-                             matches, descriptorType, matcherType, selectorType);
+            try
+            {
+                matchDescriptors((dataBuffer.end() - 2)->keypoints, (dataBuffer.end() - 1)->keypoints,
+                                 (dataBuffer.end() - 2)->descriptors, (dataBuffer.end() - 1)->descriptors,
+                                 matches, descriptorDataType, matcherType, selectorType);
+                std::cout<<"Number of Current Matches: "<<matches.size()<<std::endl;
+            }
+            catch(const invalid_argument& ia)
+            {
+                cout<<ia.what()<<endl;
+            }
 
             //// EOF STUDENT ASSIGNMENT
 

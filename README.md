@@ -41,3 +41,54 @@ Then, add *C:\vcpkg\installed\x64-windows\bin* and *C:\vcpkg\installed\x64-windo
 2. Make a build directory in the top level directory: `mkdir build && cd build`
 3. Compile: `cmake .. && make`
 4. Run it: `./2D_feature_tracking`.
+
+## Task 9. Performance evaluation 3
+
+### Keypoints Data 
+First we need to make some analysis of the extracted detector data:
+
+| Detector  | avg keypoints all |  avg keypoints ROI |  avg time (ms) | 
+|-----------|-------------------|--------------------|----------------|
+| AKAZE     |        1343       |        167         |      82.14     |
+| SIFT      |        1386       |        139         |     113.59     |
+| SHITOMASI |        1342       |        118         |      21.25     |
+| HARRIS    |         174       |         25         |      23.45     |
+| FAST      |        4921       |        410         |       4.35     |
+| BRISK     |        2712       |        276         |     277.56     |
+| ORB       |         500       |        116         |      14.04     |
+
+### Descriptor-detector data 
+
+Based on that and the data obtained by combining different detector-descriptor pairs we can get the following data:
+
+| Detector\Descriptor  | BRISK | BRIEF | ORB  | FREAK | AKAZE | SIFT  | 
+|----------------------|-------|-------|------|-------|-------|-------|
+| BRISK                | 2.85  | 1.00  | 4.53 | 40.01 | N/A   | 44.69 |
+| ORB                  | 1.37  | 0.97  | 6.30 | 38.93 | N/A   | 51.65 |
+| AKAZE                | 2.10  | 0.84  | 2.72 | 40.76 | 67.41 | 26.60 |
+| SIFT                 | 1.54  | 0.63  | N/A  | 38.53 | N/A   | 90.32 |
+| SHITOMASI            | 1.45  | 1.04  | 1.25 | 37.34 | N/A   | 19.79 |
+| HARRIS               | 0.52  | 0.59  | 1.01 | 36.99 | N/A   | 19.58 |
+| FAST                 | 4.16  | 2.69  | 2.53 | 45.29 | N/A   | 42.11 |
+
+Finally getting the average number of points matched for the same descriptor-detector pairs
+
+| Detector\Descriptor  | BRISK | BRIEF | ORB  | FREAK | AKAZE | SIFT  | 
+|----------------------|-------|-------|------|-------|-------|-------|
+| BRISK                | 175   | 190   | 169  | 170   | N/A   | 183   |
+| ORB                  | 84    | 61    | 85   | 47    | N/A   | 85    |
+| AKAZE                | 135   | 141   | 132  | 132   | 140   | 141   |
+| SIFT                 | 66    | 78    | N/A  | 66    | N/A   | 89    |
+| SHITOMASI            | 85    | 105   | 101  | 85    | N/A   | 103   |
+| HARRIS               | 16    | 20    | 18   | 16    | N/A   | 18    |
+| FAST                 | 243   | 315   | 308  | 248   | N/A   | 310   |
+
+### Final results and best performers
+
+From the data above we can conclude that the FAST detector can retrieve the most points per image taking less time than the rest of descriptors, the top 3 performer pairs are being shown next: 
+
+1. FAST-BRIED
+2. FAST-ORB
+3. FAST-BRISK
+
+The FAST detector and BRIEF descriptor show the most promising results and is the recommended approach.
