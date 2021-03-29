@@ -85,22 +85,19 @@ int main(int argc, const char *argv[])
         //// TASK MP.2 -> add the following keypoint detectors in file matching2D.cpp and enable string-based selection based on detectorType
         //// -> HARRIS, FAST, BRISK, ORB, AKAZE, SIFT
 
-        if (detectorType.compare("SHITOMASI") == 0)
-        {
-            detKeypointsShiTomasi(keypoints, imgGray, false);
-        }
-        else if(detectorType.compare("HARRIS")==0)
+        if(detectorType.compare("HARRIS")==0)
         {
             detKeypointsHarris(keypoints,imgGray,false);
         }
+        else if (detectorType.compare("SHITOMASI") == 0)
+        {
+            detKeypointsShiTomasi(keypoints, imgGray, false);
+        }
         else
         {
-            try
-            {
+            try {
                 detKeypointsModern(keypoints,imgGray,detectorType,false);
-            }
-            catch(const invalid_argument& exp)
-            {
+            } catch(const invalid_argument& exp) {
                 cout<<exp.what()<<endl;
             }
         }
@@ -110,20 +107,16 @@ int main(int argc, const char *argv[])
         //// TASK MP.3 -> only keep keypoints on the preceding vehicle
 
         // only keep keypoints on the preceding vehicle
-        bool bFocusOnVehicle = true;
         cv::Rect vehicleRect(535, 180, 180, 150);
-        if (bFocusOnVehicle)
+        vector<cv::KeyPoint> focusKeypoints;
+        for(auto it=keypoints.begin();it!=keypoints.end();++it)
         {
-            vector<cv::KeyPoint> focusedKeypoints;
-            for(auto it=keypoints.begin();it!=keypoints.end();++it)
+            if(vehicleRect.contains(it->pt))
             {
-                if(vehicleRect.contains(it->pt))
-                {
-                    focusedKeypoints.push_back(*it);
-                }
+                focusKeypoints.push_back(*it);
             }
-            keypoints=focusedKeypoints;
         }
+        keypoints=focusKeypoints;
 
         cout<<"---> Number of keypoints on previous vehicle = "<<keypoints.size()<<endl;
 
