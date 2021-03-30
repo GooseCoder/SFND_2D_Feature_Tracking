@@ -104,7 +104,7 @@ void descKeypoints(vector<cv::KeyPoint> &keypoints, cv::Mat &img, cv::Mat &descr
     }
     else if(descriptorType.compare("SIFT")==0)
     {
-        extractor=cv::SIFT::create();
+        extractor=cv::xfeatures2d::SIFT::create();
     }
     else if(descriptorType.compare("AKAZE")==0)
     {
@@ -181,7 +181,7 @@ void detKeypointsModern(std::vector<cv::KeyPoint> &keypoints, cv::Mat &img, std:
     }
     else if(detectorType.compare("SIFT")==0)
     {
-        detectorObject=cv::SIFT::create();
+        detectorObject=cv::xfeatures2d::SIFT::create();
     }
     else{
         throw invalid_argument("Unable to identify detector Type "+detectorType);
